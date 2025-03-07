@@ -3,6 +3,7 @@ const userRouter=express.Router();
 const User=require("../Models/user");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const {UserAuth}=require("../utils/auth")
 
 userRouter.post('/signup',async(req,res)=>{
     try{
@@ -48,5 +49,18 @@ userRouter.post('/login',async(req,res)=>{
     }
    
 })
+
+userRouter.get('/profile',UserAuth,async(req,res)=>{
+    try{
+        const user=req.user;
+        res.status(200).json({userId:user.userId,firstName:user.firstName,lastName:user.lastName,emailId:user.emailId});
+    }catch(err){
+        res.status(400).json("Login first");
+    }
+    
+
+})
+
+
 
 module.exports=userRouter;
