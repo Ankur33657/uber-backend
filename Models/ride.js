@@ -21,9 +21,18 @@ const RideSchema=new mongoose.Schema({
         },
         required:true
     },
-    destination:{
-        type:Boolean,
-        default:false
+    status:{
+        type:String,
+        enum:["riderequest","accepted","shareride","shared","completed","rejected"],
+        required:true
+    },
+    fare:{
+        type:Number
+      
+    },
+    distance:{
+        type:Number
+       
     }
 },{timestamps:true})
 
