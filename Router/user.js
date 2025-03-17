@@ -61,6 +61,31 @@ userRouter.get('/profile',UserAuth,async(req,res)=>{
 
 })
 
+userRouter.get('/logout',async(req,res)=>{
+    try{
+        res.clearCookie('token',null).json("Logout successfull");
+    }catch(err){
+        res.status(400).json(err.message);
+    }
+})
+
+userRouter.patch('/profile/edit', UserAuth,async(req,res)=>{
+    try{
+        const user=req.user;
+        const update=req.body;
+        if(update.userId)throw new Error("userId should not be updated");
+        if(update.emailId)throw new Error("Email should not be updated");
+        if(update.password)throw new Error("Password should not be updated");
+        const updatedData=await User.findOneAndUpdate({_id:user._id},update,{runValidators:true});
+        await updatedData.save();
+        res.status(200).json("update successfully");
+
+    }catch(error){
+        res.status(400).json(error.message);
+    }
+
+        
+})
 
 
 module.exports=userRouter;
