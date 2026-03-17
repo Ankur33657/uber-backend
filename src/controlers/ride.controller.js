@@ -1,0 +1,30 @@
+const RideServices = require("../services/ride.service")
+const Utils = require("../utils/utils");
+const constant = require("../utils/constant");
+
+const findingCaptainandAssignRide = async (req, res) => {
+  try {
+    const ride = await RideServices?.findingCaptainandAssignRideService(
+      req.user,
+      req.body,
+    );
+    Utils?.responseFormat(res, ride?.code, ride?.message, ride?.data);
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+const changeRideStatus = async (req, res) => {
+    try {
+        const ride = await RideServices?.ChangeRideStatus(req.body);
+         Utils?.responseFormat(res, ride?.code, ride?.message, ride?.data);
+    } catch (error) {
+        Utils?.responseFormat(res,error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,error?.message)
+    }
+}
+
+module.exports = { findingCaptainandAssignRide, changeRideStatus };
