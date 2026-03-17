@@ -36,6 +36,10 @@ const CaptainSchema = new mongoose.Schema(
       type: Number,
       default: 5,
     },
+    earning: {
+      today: Number,
+      total: Number,
+    },
   },
   { timestamps: true },
 );

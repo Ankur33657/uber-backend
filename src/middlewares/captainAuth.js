@@ -5,10 +5,20 @@ const jwt=require("jsonwebtoken")
 const CaptainAuth = async (req, res, next) => {
     try {
         const { captainToken } = req.cookies;
-        if (!captainToken) Utils?.responseFormat(res, constant?.ResponseCode.UNAUTHORIZED, "Unauthorized Captain");
+        if (!captainToken)
+          return Utils?.responseFormat(
+            res,
+            constant?.ResponseCode.UNAUTHORIZED,
+            "Unauthorized Captain",
+          );
         const decord = jwt.verify(captainToken, process.env.JWT_SECRET);
         const captain = await Captain.findOne({ _id: decord._id });
-        if (!captain) Utils?.responseFormat(res, constant?.ResponseCode?.UNAUTHORIZED, "UnAuthorized Captain");
+        if (!captain)
+          return Utils?.responseFormat(
+            res,
+            constant?.ResponseCode?.UNAUTHORIZED,
+            "UnAuthorized Captain",
+          );
         req.captain = captain;
         next();
 

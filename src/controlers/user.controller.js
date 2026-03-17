@@ -47,4 +47,23 @@ const UserProfile = async (req, res) => {
     }
 }
 
-module.exports = { loginUser, signUpUser, logoutUser, UserProfile }; 
+const updateProfile = async (req, res) => {
+  try {
+    const user = await userServices.updateProfile(req.user, req.body);
+    return responseFormat(res, user?.code, user?.message, user?.data);
+  } catch (error) {
+    return responseFormat(
+      res,
+      error?.code || ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+module.exports = {
+  loginUser,
+  signUpUser,
+  logoutUser,
+  UserProfile,
+  updateProfile,
+}; 

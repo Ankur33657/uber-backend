@@ -1,4 +1,4 @@
- const ResponseCode = {
+const ResponseCode = {
   OK: 200,
   ALREADY_EXIST: 208,
   CREATED: 201,
@@ -14,4 +14,6 @@
   INTERNAL_SERVER_ERROR: 500,
 };
 
-module.exports={ResponseCode}
+const TIME_INTERVAL_NOTIFICATIONS = 10 * 1000;
+
+module.exports = { ResponseCode, TIME_INTERVAL_NOTIFICATIONS };
