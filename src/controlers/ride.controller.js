@@ -1,4 +1,4 @@
-const RideServices = require("../services/ride.service")
+const RideServices = require("../services/ride.service");
 const Utils = require("../utils/utils");
 const constant = require("../utils/constant");
 
@@ -19,12 +19,47 @@ const findingCaptainandAssignRide = async (req, res) => {
 };
 
 const changeRideStatus = async (req, res) => {
-    try {
-        const ride = await RideServices?.ChangeRideStatus(req.body);
-         Utils?.responseFormat(res, ride?.code, ride?.message, ride?.data);
-    } catch (error) {
-        Utils?.responseFormat(res,error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,error?.message)
-    }
-}
+  try {
+    const ride = await RideServices?.ChangeRideStatus(req.body);
+    Utils?.responseFormat(res, ride?.code, ride?.message, ride?.data);
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
 
-module.exports = { findingCaptainandAssignRide, changeRideStatus };
+const getPreviousRide = async (req, res) => {
+  try {
+    const ride = await RideServices?.getPreviousRide(req.user);
+    const previousRide = [];
+    const futureRide = [];
+    for (let i = 0; i < ride.length; i++) {
+      const item = ride[i];
+
+      if (item?.status === "requested") {
+        futureRide.push(item);
+      } else {
+        previousRide.push(item);
+      }
+    }
+    Utils?.responseFormat(res, ride?.code, ride?.message, {
+      futureRide: futureRide,
+      previousRide: previousRide,
+    });
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+module.exports = {
+  findingCaptainandAssignRide,
+  changeRideStatus,
+  getPreviousRide,
+};

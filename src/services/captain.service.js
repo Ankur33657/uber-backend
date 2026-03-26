@@ -7,8 +7,9 @@ const loginService = async (data) => {
   const { email, password } = data;
   if (!email || !password)
     throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters!!" };
+  const emailLower = email.trim().toLowerCase();
   const user = await User.findOne({
-    email: email,
+    email: emailLower,
   }).select("+password");
   if (!user)
     throw { code: ResponseCode.UNAUTHORIZED, message: "Invailid Credintials" };

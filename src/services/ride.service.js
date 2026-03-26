@@ -8,7 +8,7 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
   /* -Search for captains within a 20 km radius who are active and not busy.
      -Notify eligible captains using an algorithm that prioritizes those who
       have earned less, ensuring fair distribution of rides.
-     -If a captain does not accept the request within 10 seconds, forward the 
+     -If a captain does not accept the request within 10 seconds, forward the
       request to the next available captain.*/
 
   const captains = await Captain.find({
@@ -22,7 +22,7 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
     };
 
   const rideId = `${currentUser._id}-${Date.now()}`;
-      let acceptedCaptain = null;
+  let acceptedCaptain = null;
 
   for (const cap of captains) {
     sendMessageToSocketId(cap.user.toString(), {
@@ -75,18 +75,31 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
   }
 };
 
-
 const ChangeRideStatus = async (data) => {
-    const ride = await Ride.findByIdAndUpdate(
-      data?._id,
-      { status: data?.status },
-      { new: true, runValidators: true },
-    );
-    
-    return {code:constant?.ResponseCode?.OK,message:"Ride updated successfully",data:ride}
-}
+  const ride = await Ride.findByIdAndUpdate(
+    data?._id,
+    { status: data?.status },
+    { new: true, runValidators: true },
+  );
+
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "Ride updated successfully",
+    data: ride,
+  };
+};
+
+const getPreviousRide = async (currentUser) => {
+  const ride = await Ride.find({ _id: currentUser?._id });
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "Ride fetch successfully",
+    data: ride,
+  };
+};
 
 module.exports = {
   findingCaptainandAssignRideService,
   ChangeRideStatus,
+  getPreviousRide,
 };
