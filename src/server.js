@@ -1,16 +1,19 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const UserRouter = require("./routes/user.route");
 const CaptainRouter = require("./routes/captain.router");
 const cookieParser = require("cookie-parser");
-const RideRouter = require("../src/routes/ride.router");
+const RideRouter = require("./routes/ride.router");
+const CommunityRouter = require("./routes/community.router");
+const { createRouteHandler } = require("uploadthing/express");
+const { uploadRouter } = require("./utils/uploadthing");
 const app = express();
 const cors = require("cors");
 const http = require("http");
 const server = http.createServer(app);
 const { initializeSocket } = require("./sockets/socket");
 
-require("dotenv").config();
 
 initializeSocket(server);
 
@@ -20,11 +23,18 @@ app.use(
     credentials: true,
   }),
 );
+app.use(
+  "/api/uploadthing",
+  createRouteHandler({
+    router: uploadRouter,
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/user", UserRouter);
 app.use("/api/captain", CaptainRouter);
 app.use("/api/ride", RideRouter);
+app.use("/api/community", CommunityRouter);
 
 mongoose
   .connect(process.env.MONGO_URL)

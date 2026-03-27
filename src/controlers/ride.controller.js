@@ -33,11 +33,12 @@ const changeRideStatus = async (req, res) => {
 
 const getPreviousRide = async (req, res) => {
   try {
-    const ride = await RideServices?.getPreviousRide(req.user);
+    const rideResponse = await RideServices?.getPreviousRide(req.user);
+    const rides = rideResponse?.data || [];
     const previousRide = [];
     const futureRide = [];
-    for (let i = 0; i < ride.length; i++) {
-      const item = ride[i];
+    for (let i = 0; i < rides.length; i++) {
+      const item = rides[i];
 
       if (item?.status === "requested") {
         futureRide.push(item);
@@ -45,7 +46,7 @@ const getPreviousRide = async (req, res) => {
         previousRide.push(item);
       }
     }
-    Utils?.responseFormat(res, ride?.code, ride?.message, {
+    Utils?.responseFormat(res, rideResponse?.code, rideResponse?.message, {
       futureRide: futureRide,
       previousRide: previousRide,
     });

@@ -90,11 +90,11 @@ const ChangeRideStatus = async (data) => {
 };
 
 const getPreviousRide = async (currentUser) => {
-  const ride = await Ride.find({ _id: currentUser?._id });
+  const rides = await Ride.find({ userId: currentUser?._id });
   return {
     code: constant?.ResponseCode?.OK,
-    message: "Ride fetch successfully",
-    data: ride,
+    message: "Rides fetched successfully",
+    data: rides,
   };
 };
 
