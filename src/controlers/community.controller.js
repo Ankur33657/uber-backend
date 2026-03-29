@@ -30,11 +30,37 @@ const createfeedPost = async (req, res) => {
       response?.data,
     );
   } catch (error) {
-     Utils?.responseFormat(
-       res,
-       error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
-       error?.message,
-     );
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
   }
-}
-module.exports = { getfeedPost, createfeedPost };
+};
+
+const updatePost = async (req, res) => {
+  try {
+    const response = await CommunityService?.updatePost(req.user, req.body);
+    Utils?.responseFormat(res, response?.code, response?.message);
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+const deletePost = async (req, res) => {
+  try {
+    const response = await CommunityService?.deletePost(req.user, req.body);
+    Utils?.responseFormat(res, response?.code, response?.message);
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+module.exports = { getfeedPost, createfeedPost, updatePost, deletePost };

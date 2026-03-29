@@ -8,8 +8,7 @@ const uploadRouter = {
       maxFileSize: "4MB",
       maxFileCount: 1,
     },
-  }).onUploadComplete(async ({ metadata, file }) => {
-  }),
+  }).onUploadComplete(async ({ metadata, file }) => {}),
 };
 
 module.exports = { uploadRouter };

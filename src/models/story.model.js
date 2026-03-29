@@ -1,0 +1,44 @@
+const mongoose = require("mongoose");
+const StoryScheme = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  media: {
+    url: String,
+    key: String,
+  },
+  caption: String,
+
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+
+  expiresAt: {
+    type: Date,
+    required: true,
+  },
+  deletedAt: {
+    type: Date,
+    require: true,
+  },
+  view: [
+    {
+          name: {
+            type: String
+          },
+          imageUrl: {
+              type: String,
+              default:""
+          },
+          seenAt: {
+            type:Date
+        }
+    },
+  ],
+});
+StoryScheme.index({ deletedAt: 1 }, { expireAfterSeconds: 0 });
+
+module.exports=mongoose.model("story",StoryScheme)
