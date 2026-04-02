@@ -8,6 +8,10 @@ const uploadRouter = {
       maxFileSize: "4MB",
       maxFileCount: 1,
     },
+    video: {
+      maxFileSize: "20MB",
+      maxFileCount: 1,
+    },
   }).onUploadComplete(async ({ metadata, file }) => {}),
 };
 

@@ -16,4 +16,12 @@ const ResponseCode = {
 
 const TIME_INTERVAL_NOTIFICATIONS = 10 * 1000;
 
-module.exports = { ResponseCode, TIME_INTERVAL_NOTIFICATIONS };
+const STORY_TIME_EXPIRE = 24 * 60 * 60 * 1000;
+const STORY_DELETE_TIME = (24 * 60 * 60 + 10 * 60) * 1000;
+
+module.exports = {
+  ResponseCode,
+  TIME_INTERVAL_NOTIFICATIONS,
+  STORY_TIME_EXPIRE,
+  STORY_DELETE_TIME,
+};
