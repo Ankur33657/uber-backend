@@ -2,13 +2,13 @@ const Ride = require("../models/ride.model");
 const Captain = require("../models/captain.model");
 const constant = require("../utils/constant");
 const { sendMessageToSocketId, rideEvents } = require("../sockets/socket");
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const CommonServices = require("./common.service");
 
 const findingCaptainandAssignRideService = async (currentUser, data) => {
   /* -Search for captains within a 20 km radius who are active and not busy.
      -Notify eligible captains using an algorithm that prioritizes those who
       have earned less, ensuring fair distribution of rides.
-     -If a captain does not accept the request within 10 seconds, forward the 
+     -If a captain does not accept the request within 10 seconds, forward the
       request to the next available captain.*/
 
   const captains = await Captain.find({
@@ -22,7 +22,7 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
     };
 
   const rideId = `${currentUser._id}-${Date.now()}`;
-      let acceptedCaptain = null;
+  let acceptedCaptain = null;
 
   for (const cap of captains) {
     sendMessageToSocketId(cap.user.toString(), {
@@ -48,6 +48,7 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
       acceptedCaptain = await Captain.findOne({ user: result.data.captainId });
       break;
     }
+   
   }
 
   if (acceptedCaptain) {
@@ -75,18 +76,84 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
   }
 };
 
-
 const ChangeRideStatus = async (data) => {
-    const ride = await Ride.findByIdAndUpdate(
-      data?._id,
-      { status: data?.status },
-      { new: true, runValidators: true },
-    );
-    
-    return {code:constant?.ResponseCode?.OK,message:"Ride updated successfully",data:ride}
-}
+  const ride = await Ride.findByIdAndUpdate(
+    data?._id,
+    { status: data?.status },
+    { new: true, runValidators: true },
+  );
+
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "Ride updated successfully",
+    data: ride,
+  };
+};
+
+const getPreviousRide = async (currentUser) => {
+  const rides = await Ride.find({ userId: currentUser?._id });
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "Rides fetched successfully",
+    data: rides,
+  };
+};
+
+
+const findingPath = async (data) => {
+  const { coordinate } = data;
+  // coordinate formate
+  // (-0.12070277, 51.514156);
+  // (-0.12360937, 51.507996);
+  const response = await fetch(
+    `https://us1.locationiq.com/v1/directions/driving/${coordinate}?key=${process.env.RAPID_API_KEY}&steps=true&alternatives=true&geometries=geojson&overview=full`,
+  );
+  const routes = await response.json();
+  if (routes.code === "Ok") {
+    return {
+      code: constant?.ResponseCode?.OK,
+      message: "Route fetch",
+      data: routes,
+    };
+  } else {
+    return {
+      code: constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      message: "Error in fetching",
+      data: null,
+    };
+  }
+};
+
+const calculatingPrice = async (data) => {
+  const { source, destination, selectedRoute, journeyTime } = data;
+  const price = await CommonServices?.SurgePriceCalculate({
+    currentTime: journeyTime,
+    distance: selectedRoute?.distance / 1000,
+    time: selectedRoute?.duration / 60,
+  });
+  //arrival time is hardcorded for now
+
+  const responseFormat = constant?.VEHICLE_CONFIG.map((vehicle) => ({
+    key: vehicle.key,
+    type: vehicle.type,
+    arrivalTime: vehicle.arrivalTime,
+    capacity: vehicle.capacity,
+    price: (price * (constant?.VEHICLE_MULTIPLIER?.[vehicle.key] || 1)).toFixed(
+      2,
+    ),
+  }));
+
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "price calculated",
+    data: responseFormat,
+  };
+};
 
 module.exports = {
   findingCaptainandAssignRideService,
   ChangeRideStatus,
+  getPreviousRide,
+  findingPath,
+  calculatingPrice,
 };

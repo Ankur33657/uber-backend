@@ -1,17 +1,13 @@
-const mongoose=require("mongoose");
-const validator=require("validator");
+const mongoose = require("mongoose");
+const validator = require("validator");
 const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      require: true,
+      required: true,
     },
-    phone: {
-      type: Number,
-    },
-    profileImage: {
-      type: String,
-    },
+    phone: String,
+    profileImage: String,
     role: {
       type: String,
       enum: ["rider", "driver"],
@@ -25,7 +21,6 @@ const UserSchema = new mongoose.Schema(
         lng: Number,
       },
     ],
-
     rating: {
       type: Number,
       default: 5,
@@ -50,13 +45,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
       select: false,
-      validate(value) {
-        if (!validator.isStrongPassword(value)) {
-          throw new Error("Make strong password");
-        }
-      },
     },
   },
   { timestamps: true },
 );
-module.exports=mongoose.model("user",UserSchema)
+
+module.exports = mongoose.model("User", UserSchema);
