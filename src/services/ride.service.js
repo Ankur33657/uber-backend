@@ -2,7 +2,7 @@ const Ride = require("../models/ride.model");
 const Captain = require("../models/captain.model");
 const constant = require("../utils/constant");
 const { sendMessageToSocketId, rideEvents } = require("../sockets/socket");
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const CommonServices = require("./common.service");
 
 const findingCaptainandAssignRideService = async (currentUser, data) => {
   /* -Search for captains within a 20 km radius who are active and not busy.
@@ -48,6 +48,7 @@ const findingCaptainandAssignRideService = async (currentUser, data) => {
       acceptedCaptain = await Captain.findOne({ user: result.data.captainId });
       break;
     }
+   
   }
 
   if (acceptedCaptain) {
@@ -98,8 +99,61 @@ const getPreviousRide = async (currentUser) => {
   };
 };
 
+
+const findingPath = async (data) => {
+  const { coordinate } = data;
+  // coordinate formate
+  // (-0.12070277, 51.514156);
+  // (-0.12360937, 51.507996);
+  const response = await fetch(
+    `https://us1.locationiq.com/v1/directions/driving/${coordinate}?key=${process.env.RAPID_API_KEY}&steps=true&alternatives=true&geometries=geojson&overview=full`,
+  );
+  const routes = await response.json();
+  if (routes.code === "Ok") {
+    return {
+      code: constant?.ResponseCode?.OK,
+      message: "Route fetch",
+      data: routes,
+    };
+  } else {
+    return {
+      code: constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      message: "Error in fetching",
+      data: null,
+    };
+  }
+};
+
+const calculatingPrice = async (data) => {
+  const { source, destination, selectedRoute, journeyTime } = data;
+  const price = await CommonServices?.SurgePriceCalculate({
+    currentTime: journeyTime,
+    distance: selectedRoute?.distance / 1000,
+    time: selectedRoute?.duration / 60,
+  });
+  //arrival time is hardcorded for now
+
+  const responseFormat = constant?.VEHICLE_CONFIG.map((vehicle) => ({
+    key: vehicle.key,
+    type: vehicle.type,
+    arrivalTime: vehicle.arrivalTime,
+    capacity: vehicle.capacity,
+    price: (price * (constant?.VEHICLE_MULTIPLIER?.[vehicle.key] || 1)).toFixed(
+      2,
+    ),
+  }));
+
+  return {
+    code: constant?.ResponseCode?.OK,
+    message: "price calculated",
+    data: responseFormat,
+  };
+};
+
 module.exports = {
   findingCaptainandAssignRideService,
   ChangeRideStatus,
   getPreviousRide,
+  findingPath,
+  calculatingPrice,
 };

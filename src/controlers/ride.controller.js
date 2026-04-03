@@ -59,8 +59,46 @@ const getPreviousRide = async (req, res) => {
   }
 };
 
+const findingPathAlternative = async (req, res) => {
+  try {
+    const response = await RideServices?.findingPath(req.query);
+    return Utils?.responseFormat(
+      res,
+      response?.code,
+      response?.message,
+      response?.data,
+    );
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+const calculatingPriceForDrive = async (req, res) => {
+  try {
+    const response = await RideServices?.calculatingPrice(req.body);
+    Utils?.responseFormat(
+      res,
+      response?.code,
+      response?.message,
+      response?.data,
+    );
+  } catch (error) {
+    Utils?.responseFormat(
+      res,
+      error?.code || constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
 module.exports = {
   findingCaptainandAssignRide,
   changeRideStatus,
   getPreviousRide,
+  findingPathAlternative,
+  calculatingPriceForDrive,
 };

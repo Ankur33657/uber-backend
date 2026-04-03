@@ -60,4 +60,5 @@ const updateProfile = async (currentUser, data) => {
   };
 };
 
+
 module.exports = { login, signup, updateProfile };

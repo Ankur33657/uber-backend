@@ -3,7 +3,7 @@ const RideRouter = express.Router();
 const { userAuth } = require("../middlewares/authHandler");
 const RiderController = require("../controlers/ride.controller");
 
-RideRouter.get(
+RideRouter.post(
   "/findcaptain",
   userAuth,
   RiderController?.findingCaptainandAssignRide,
@@ -14,4 +14,16 @@ RideRouter.post(
   RiderController?.changeRideStatus,
 );
 RideRouter.get("/previousride", userAuth, RiderController?.getPreviousRide);
+RideRouter.get(
+  "/findalternatepath",
+  userAuth,
+  RiderController?.findingPathAlternative,
+);
+
+RideRouter.post(
+  "/calculatingprice",
+  userAuth,
+  RiderController?.calculatingPriceForDrive,
+);
+
 module.exports = RideRouter;
