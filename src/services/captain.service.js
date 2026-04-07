@@ -21,8 +21,32 @@ const loginService = async (data) => {
 
 const signUpService = async (currentUser, data) => {
   // adding some background Checkup later for now only update the role of User.
-  const { model, number, color } = data;
-  if (!model || !number || !color)
+  const {
+    AdharNumber,
+    earningGoal,
+    make,
+    model,
+    name,
+    panNumber,
+    phone,
+    vehicleNumber,
+    VehicleInsurance,
+    drivingLicene,
+    photo,
+  } = data;
+  if (
+    !AdharNumber ||
+    !earningGoal ||
+    !make ||
+    !model ||
+    !name ||
+    !panNumber ||
+    !phone ||
+    !vehicleNumber ||
+    !VehicleInsurance?.key ||
+    !drivingLicene?.key ||
+    !photo?.key
+  )
     throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters" };
   const existingProfile = await Captain.findOne({ user: currentUser?._id });
   if (existingProfile)
@@ -30,14 +54,20 @@ const signUpService = async (currentUser, data) => {
       code: ResponseCode.ALREADY_EXIST,
       message: "Captain profile already exists",
     };
-  const user = await User.findByIdAndUpdate(
-    currentUser?._id,
-    { role: "driver" },
-    { new: true, runValidators: true },
-  );
+
   const newCaptain = new Captain({
-    user: currentUser?._id,
-    vehicle: { model: model, number: number, color: color },
+    user: { name: name, phone: phone },
+    vehicle: {
+      insurance: { key: VehicleInsurance?.key, url: VehicleInsurance?.url },
+      license: { key: drivingLicene?.key, url: drivingLicene?.url },
+      make: make,
+      model: model,
+      vehicleNumber: vehicleNumber,
+    },
+    AdharNumber: AdharNumber,
+    earningGoal: earningGoal,
+    panNumber: panNumber,
+    photo: { key: photo?.key, url: photo?.url },
   });
   await newCaptain.save();
   return {

@@ -5,8 +5,8 @@ const {userAuth}=require("../middlewares/authHandler")
 const {CaptainAuth} = require("../middlewares/captainAuth")
 
 
-CaptainRouter.get("/login", CaptainControler?.loginCaptain);
-CaptainRouter.post("/signup", userAuth, CaptainControler?.signUpCaptain);
+CaptainRouter.post("/login", CaptainControler?.loginCaptain);
+CaptainRouter.post("/signup", CaptainControler?.signUpCaptain);
 CaptainRouter.get("/profile", CaptainAuth, CaptainControler?.getProfile);
 CaptainRouter.patch("/profile/edit", CaptainAuth, CaptainControler?.updateProfile);
 CaptainRouter.delete(
