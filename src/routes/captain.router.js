@@ -6,7 +6,7 @@ const {CaptainAuth} = require("../middlewares/captainAuth")
 
 
 CaptainRouter.post("/login", CaptainControler?.loginCaptain);
-CaptainRouter.post("/signup", CaptainControler?.signUpCaptain);
+CaptainRouter.post("/signup", userAuth, CaptainControler?.signUpCaptain);
 CaptainRouter.get("/profile", CaptainAuth, CaptainControler?.getProfile);
 CaptainRouter.patch("/profile/edit", CaptainAuth, CaptainControler?.updateProfile);
 CaptainRouter.delete(

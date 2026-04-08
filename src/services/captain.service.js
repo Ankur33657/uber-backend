@@ -2,7 +2,6 @@ const Captain = require("../models/captain.model");
 const User = require("../models/user.model");
 const { ResponseCode } = require("../utils/constant");
 const bcrypt = require("bcryptjs");
-const { responseFormat } = require("../utils/utils");
 const loginService = async (data) => {
   const { email, password } = data;
   if (!email || !password)
@@ -12,10 +11,10 @@ const loginService = async (data) => {
     email: emailLower,
   }).select("+password");
   if (!user)
-    throw { code: ResponseCode.UNAUTHORIZED, message: "Invailid Credintials" };
+    throw { code: ResponseCode.UNAUTHORIZED, message: "Invalid Credentials" };
   const isCorrectPassword = await bcrypt.compare(password, user.password);
-  if (!isCorrectPassword || user?.role !== "driver")
-    throw { code: ResponseCode.UNAUTHORIZED, message: "Invaild Credentials" };
+  if (!isCorrectPassword || user?.role !== "captain")
+    throw { code: ResponseCode.UNAUTHORIZED, message: "Invalid Credentials" };
   return { code: ResponseCode.OK, message: "Login Successful", data: user };
 };
 
@@ -33,6 +32,7 @@ const signUpService = async (currentUser, data) => {
     VehicleInsurance,
     drivingLicene,
     photo,
+    desc,
   } = data;
   if (
     !AdharNumber ||
@@ -45,7 +45,8 @@ const signUpService = async (currentUser, data) => {
     !vehicleNumber ||
     !VehicleInsurance?.key ||
     !drivingLicene?.key ||
-    !photo?.key
+    !photo?.key ||
+    !desc
   )
     throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters" };
   const existingProfile = await Captain.findOne({ user: currentUser?._id });
@@ -54,9 +55,18 @@ const signUpService = async (currentUser, data) => {
       code: ResponseCode.ALREADY_EXIST,
       message: "Captain profile already exists",
     };
+  const user = await User.findById(currentUser?._id);
+  if (!user) {
+    throw { code: ResponseCode.UNAUTHORIZED, message: "User does not exist" };
+  }
+
+  user.phone = phone;
+  user.name = name;
+  user.role = "captain";
+  await user.save();
 
   const newCaptain = new Captain({
-    user: { name: name, phone: phone },
+    user: currentUser?._id,
     vehicle: {
       insurance: { key: VehicleInsurance?.key, url: VehicleInsurance?.url },
       license: { key: drivingLicene?.key, url: drivingLicene?.url },
@@ -68,6 +78,7 @@ const signUpService = async (currentUser, data) => {
     earningGoal: earningGoal,
     panNumber: panNumber,
     photo: { key: photo?.key, url: photo?.url },
+    desc: desc,
   });
   await newCaptain.save();
   return {

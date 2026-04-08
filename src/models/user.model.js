@@ -10,7 +10,7 @@ const UserSchema = new mongoose.Schema(
     profileImage: String,
     role: {
       type: String,
-      enum: ["rider", "driver"],
+      enum: ["rider", "captain"],
       default: "rider",
     },
     savedPlaces: [

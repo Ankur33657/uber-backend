@@ -29,7 +29,9 @@ const signUpCaptain = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRE },
     );
+    res.clearCookie("token");
     res.cookie("captainToken", captainToken);
+
     responseFormat(res, user?.code, user?.message, user?.data);
   } catch (error) {
     responseFormat(

@@ -2,12 +2,11 @@ const mongoose = require("mongoose");
 
 const CaptainSchema = new mongoose.Schema(
   {
-    // user: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "user",
-    //   unique: true,
-    // },
-    user: { name: String, phone: String },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      unique: true,
+    },
     vehicle: {
       insurance: {
         key: {
@@ -41,6 +40,7 @@ const CaptainSchema = new mongoose.Schema(
       },
       coordinates: {
         type: [Number],
+        default: [0, 0],
       },
     },
     isOnline: {
@@ -85,6 +85,7 @@ const CaptainSchema = new mongoose.Schema(
         required: true,
       },
     },
+    desc: { type: String, required: true },
   },
   { timestamps: true },
 );
