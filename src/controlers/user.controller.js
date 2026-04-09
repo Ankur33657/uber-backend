@@ -9,7 +9,11 @@ const loginUser = async (req, res) => {
     const token = jwt.sign({ _id: user.data._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.TOKEN_EXPIRE,
     });
-    res.cookie("token", token, { httpOnly: true });
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
     const { password, ...safeUser } = user.data.toObject();
     return responseFormat(res, user.code, user.message, safeUser);
   } catch (error) {
@@ -27,7 +31,11 @@ const signUpUser = async (req, res) => {
     const token = jwt.sign({ _id: user.data._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.TOKEN_EXPIRE,
     });
-    res.cookie("token", token);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
     const { password, ...safeUser } = user.data.toObject();
     return responseFormat(res, user.code, user.message, safeUser);
   } catch (error) {
@@ -49,7 +57,11 @@ const signUpUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   try {
-    res.clearCookie("token", null);
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
     return responseFormat(res, ResponseCode.OK, "Logout Successful");
   } catch (error) {
     return responseFormat(

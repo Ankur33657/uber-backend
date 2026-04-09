@@ -10,7 +10,11 @@ const loginCaptain = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRE },
     );
-    res.cookie("captainToken", captainToken);
+    res.cookie("captainToken", captainToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
     responseFormat(res, captain?.code, captain?.message, captain?.data);
   } catch (error) {
     responseFormat(
@@ -29,8 +33,16 @@ const signUpCaptain = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRE },
     );
-    res.clearCookie("token");
-    res.cookie("captainToken", captainToken);
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
+    res.cookie("captainToken", captainToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
 
     responseFormat(res, user?.code, user?.message, user?.data);
   } catch (error) {
@@ -75,7 +87,11 @@ const updateProfile = async (req, res) => {
 const deleteCaptain = async (req, res) => {
   try {
     const user = await CaptainServices?.deleteProfile(req.captain);
-    res.clearCookie("captainToken", null);
+    res.clearCookie("captainToken", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
     return responseFormat(res, user?.code, user?.message, user?.data);
   } catch (error) {
     responseFormat(
