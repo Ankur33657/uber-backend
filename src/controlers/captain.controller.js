@@ -25,11 +25,13 @@ const signUpCaptain = async (req, res) => {
   try {
     const user = await CaptainServices.signUpService(req.user, req.body);
     const captainToken = jwt.sign(
-      { _id: user?.data?._id },
+      { _id: user?.data?.user },
       process.env.JWT_SECRET,
       { expiresIn: process.env.TOKEN_EXPIRE },
     );
+    res.clearCookie("token");
     res.cookie("captainToken", captainToken);
+
     responseFormat(res, user?.code, user?.message, user?.data);
   } catch (error) {
     responseFormat(
@@ -84,10 +86,26 @@ const deleteCaptain = async (req, res) => {
   }
 };
 
+const getCaptainStatus = async (req, res) => {
+  try {
+    const cap = await CaptainServices?.getCaptainStatus(req.captain);
+    return responseFormat(res, cap?.code, cap?.message, cap?.data);
+  } catch (error) {
+    responseFormat(
+      res,
+      error?.code || ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
+
+
 module.exports = {
   loginCaptain,
   signUpCaptain,
   getProfile,
   updateProfile,
   deleteCaptain,
+  getCaptainStatus,
 };

@@ -33,7 +33,7 @@ const changeRideStatus = async (req, res) => {
 
 const getPreviousRide = async (req, res) => {
   try {
-    const rideResponse = await RideServices?.getPreviousRide(req.user);
+    const rideResponse = await RideServices?.getPreviousRide(req.captain);
     const rides = rideResponse?.data || [];
     const previousRide = [];
     const futureRide = [];
@@ -95,10 +95,24 @@ const calculatingPriceForDrive = async (req, res) => {
   }
 };
 
+const getCaptainWeeklyRecord = async (req, res) => {
+  try {
+    const record = await RideServices?.getWeeklyRecord(req?.captain);
+    Utils?.responseFormat(res, record?.code, record?.message, record?.data);
+  } catch (error) {
+    responseFormat(
+      res,
+      error?.code || ResponseCode?.INTERNAL_SERVER_ERROR,
+      error?.message,
+    );
+  }
+};
+
 module.exports = {
   findingCaptainandAssignRide,
   changeRideStatus,
   getPreviousRide,
   findingPathAlternative,
   calculatingPriceForDrive,
+  getCaptainWeeklyRecord,
 };

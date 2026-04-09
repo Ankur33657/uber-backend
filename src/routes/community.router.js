@@ -1,15 +1,10 @@
 const express = require("express");
 const CommunityRouter = express.Router();
-const { userAuth } = require("../middlewares/authHandler");
+const { Auth } = require("../middlewares/anyAuthenticHandler");
 const CommunityControler = require("../controlers/community.controller");
 
-CommunityRouter.get("/getfeedpost", userAuth, CommunityControler?.getfeedPost);
-CommunityRouter.post(
-  "/createpost",
-  userAuth,
-  CommunityControler?.createfeedPost,
-);
-CommunityRouter.patch("/updatepost", userAuth, CommunityControler?.updatePost);
-CommunityRouter.delete("/deletepost", userAuth, CommunityControler?.deletePost);
-
+CommunityRouter.get("/getfeedpost", Auth, CommunityControler?.getfeedPost);
+CommunityRouter.post("/createpost", Auth, CommunityControler?.createfeedPost);
+CommunityRouter.patch("/updatepost", Auth, CommunityControler?.updatePost);
+CommunityRouter.delete("/deletepost", Auth, CommunityControler?.deletePost);
 module.exports = CommunityRouter;
