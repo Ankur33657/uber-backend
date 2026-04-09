@@ -12,7 +12,7 @@ const CaptainAuth = async (req, res, next) => {
             "Unauthorized Captain",
           );
         const decord = jwt.verify(captainToken, process.env.JWT_SECRET);
-        const captain = await Captain.findOne({ _id: decord._id });
+        const captain = await Captain.findOne({ user: decord._id });
         if (!captain)
           return Utils?.responseFormat(
             res,

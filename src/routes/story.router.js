@@ -1,15 +1,11 @@
 const express = require("express");
 const StoryRouter = express.Router();
-const { userAuth } = require("../middlewares/authHandler");
+const { Auth } = require("../middlewares/anyAuthenticHandler");
 const StoryControler = require("../controlers/story.controller");
 
-StoryRouter.get("/getstory", userAuth, StoryControler?.getStory);
-StoryRouter.post("/createstory", userAuth, StoryControler?.CreateStory);
+StoryRouter.get("/getstory", Auth, StoryControler?.getStory);
+StoryRouter.post("/createstory", Auth, StoryControler?.CreateStory);
 
-StoryRouter.get(
-  "/getalllastmonthnews",
-  userAuth,
-  StoryControler?.getLastMonthNews,
-);
+StoryRouter.get("/getalllastmonthnews", Auth, StoryControler?.getLastMonthNews);
 
 module.exports = StoryRouter;

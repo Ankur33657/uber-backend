@@ -2,7 +2,6 @@ const Captain = require("../models/captain.model");
 const User = require("../models/user.model");
 const { ResponseCode } = require("../utils/constant");
 const bcrypt = require("bcryptjs");
-const { responseFormat } = require("../utils/utils");
 const loginService = async (data) => {
   const { email, password } = data;
   if (!email || !password)
@@ -12,17 +11,56 @@ const loginService = async (data) => {
     email: emailLower,
   }).select("+password");
   if (!user)
-    throw { code: ResponseCode.UNAUTHORIZED, message: "Invailid Credintials" };
+    throw { code: ResponseCode.UNAUTHORIZED, message: "Invalid Credentials" };
   const isCorrectPassword = await bcrypt.compare(password, user.password);
-  if (!isCorrectPassword || user?.role !== "driver")
-    throw { code: ResponseCode.UNAUTHORIZED, message: "Invaild Credentials" };
-  return { code: ResponseCode.OK, message: "Login Successful", data: user };
+  if (!isCorrectPassword || user?.role !== "captain")
+    throw { code: ResponseCode.UNAUTHORIZED, message: "Invalid Credentials" };
+  
+  const captain = await Captain.findOne({ user: user._id });
+  if (!captain)
+    throw {
+      code: ResponseCode.NOT_FOUND,
+      message: "Captain profile not found",
+    };
+
+  return {
+    code: ResponseCode.OK,
+    message: "Login Successful",
+    data: user,
+    captain,
+  };
 };
 
 const signUpService = async (currentUser, data) => {
   // adding some background Checkup later for now only update the role of User.
-  const { model, number, color } = data;
-  if (!model || !number || !color)
+  const {
+    AdharNumber,
+    earningGoal,
+    make,
+    model,
+    name,
+    panNumber,
+    phone,
+    vehicleNumber,
+    VehicleInsurance,
+    drivingLicene,
+    photo,
+    desc,
+  } = data;
+  if (
+    !AdharNumber ||
+    !earningGoal ||
+    !make ||
+    !model ||
+    !name ||
+    !panNumber ||
+    !phone ||
+    !vehicleNumber ||
+    !VehicleInsurance?.key ||
+    !drivingLicene?.key ||
+    !photo?.key ||
+    !desc
+  )
     throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters" };
   const existingProfile = await Captain.findOne({ user: currentUser?._id });
   if (existingProfile)
@@ -30,14 +68,30 @@ const signUpService = async (currentUser, data) => {
       code: ResponseCode.ALREADY_EXIST,
       message: "Captain profile already exists",
     };
-  const user = await User.findByIdAndUpdate(
-    currentUser?._id,
-    { role: "driver" },
-    { new: true, runValidators: true },
-  );
+  const user = await User.findById(currentUser?._id);
+  if (!user) {
+    throw { code: ResponseCode.UNAUTHORIZED, message: "User does not exist" };
+  }
+
+  user.phone = phone;
+  user.name = name;
+  user.role = "captain";
+  await user.save();
+
   const newCaptain = new Captain({
     user: currentUser?._id,
-    vehicle: { model: model, number: number, color: color },
+    vehicle: {
+      insurance: { key: VehicleInsurance?.key, url: VehicleInsurance?.url },
+      license: { key: drivingLicene?.key, url: drivingLicene?.url },
+      make: make,
+      model: model,
+      vehicleNumber: vehicleNumber,
+    },
+    AdharNumber: AdharNumber,
+    earningGoal: earningGoal,
+    panNumber: panNumber,
+    photo: { key: photo?.key, url: photo?.url },
+    desc: desc,
   });
   await newCaptain.save();
   return {
@@ -48,44 +102,31 @@ const signUpService = async (currentUser, data) => {
 };
 
 const updateProfile = async (currentCaptain, data) => {
-  if (!data?.vehicle) {
-    throw { code: ResponseCode.BAD_REQUEST, message: "Vehicle data required" };
-  }
+  const { online, busy } = data;
+  
+  const updateData = {};
+  if (typeof online === "boolean") updateData.isOnline = online;
+  if (typeof busy === "boolean") updateData.isBusy = busy;
 
-  const { model, number, color } = data.vehicle;
-
-  if (!model || !number || !color) {
-    throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters" };
-  }
-  if (
-    currentCaptain.vehicle.model === model &&
-    currentCaptain.vehicle.number === number &&
-    currentCaptain.vehicle.color === color
-  ) {
+  if (Object.keys(updateData).length === 0) {
     throw {
-      code: ResponseCode.NOT_MODIFIED,
-      message: "No changes made (Data is identical)",
+      code: ResponseCode.BAD_REQUEST,
+      message: "No valid fields provided",
     };
   }
 
   const captain = await Captain.findByIdAndUpdate(
-    currentCaptain._id,
-    {
-      $set: {
-        "vehicle.model": model,
-        "vehicle.number": number,
-        "vehicle.color": color,
-      },
-    },
-    { new: true, runValidators: true },
-  );
+    currentCaptain?._id,
+    { $set: updateData },
+    { new: true },
+  ).select("isOnline isBusy");
 
   return {
     code: ResponseCode.OK,
-    message: "Profile updated Successfully",
+    message: "Updated Successfully",
     data: captain,
   };
-};
+};;
 
 const deleteProfile = async (currentCaptain) => {
   const captain = await Captain?.deleteOne({ _id: currentCaptain?._id });
@@ -98,6 +139,31 @@ const deleteProfile = async (currentCaptain) => {
 };
 
 
+const getCaptainStatus = async (currentCaptain) => {
+  const captain = await Captain.findById(currentCaptain?._id).select(
+    "isOnline isBusy status earningGoal",
+  );
+  if (captain) {
+    return {
+      code: ResponseCode?.OK,
+      message: "status get successfully",
+      data: captain,
+    };
+  } else {
+    throw {
+      code: ResponseCode?.INTERNAL_SERVER_ERROR,
+      message: "Error in getting status",
+    };
+  }
+};
 
 
-module.exports = { loginService, signUpService, updateProfile, deleteProfile };
+
+
+module.exports = {
+  loginService,
+  signUpService,
+  updateProfile,
+  deleteProfile,
+  getCaptainStatus,
+};
