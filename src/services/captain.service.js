@@ -15,7 +15,20 @@ const loginService = async (data) => {
   const isCorrectPassword = await bcrypt.compare(password, user.password);
   if (!isCorrectPassword || user?.role !== "captain")
     throw { code: ResponseCode.UNAUTHORIZED, message: "Invalid Credentials" };
-  return { code: ResponseCode.OK, message: "Login Successful", data: user };
+  
+  const captain = await Captain.findOne({ user: user._id });
+  if (!captain)
+    throw {
+      code: ResponseCode.NOT_FOUND,
+      message: "Captain profile not found",
+    };
+
+  return {
+    code: ResponseCode.OK,
+    message: "Login Successful",
+    data: user,
+    captain,
+  };
 };
 
 const signUpService = async (currentUser, data) => {
@@ -89,44 +102,31 @@ const signUpService = async (currentUser, data) => {
 };
 
 const updateProfile = async (currentCaptain, data) => {
-  if (!data?.vehicle) {
-    throw { code: ResponseCode.BAD_REQUEST, message: "Vehicle data required" };
-  }
+  const { online, busy } = data;
+  
+  const updateData = {};
+  if (typeof online === "boolean") updateData.isOnline = online;
+  if (typeof busy === "boolean") updateData.isBusy = busy;
 
-  const { model, number, color } = data.vehicle;
-
-  if (!model || !number || !color) {
-    throw { code: ResponseCode.BAD_REQUEST, message: "Missing Parameters" };
-  }
-  if (
-    currentCaptain.vehicle.model === model &&
-    currentCaptain.vehicle.number === number &&
-    currentCaptain.vehicle.color === color
-  ) {
+  if (Object.keys(updateData).length === 0) {
     throw {
-      code: ResponseCode.NOT_MODIFIED,
-      message: "No changes made (Data is identical)",
+      code: ResponseCode.BAD_REQUEST,
+      message: "No valid fields provided",
     };
   }
 
   const captain = await Captain.findByIdAndUpdate(
-    currentCaptain._id,
-    {
-      $set: {
-        "vehicle.model": model,
-        "vehicle.number": number,
-        "vehicle.color": color,
-      },
-    },
-    { new: true, runValidators: true },
-  );
+    currentCaptain?._id,
+    { $set: updateData },
+    { new: true },
+  ).select("isOnline isBusy");
 
   return {
     code: ResponseCode.OK,
-    message: "Profile updated Successfully",
+    message: "Updated Successfully",
     data: captain,
   };
-};
+};;
 
 const deleteProfile = async (currentCaptain) => {
   const captain = await Captain?.deleteOne({ _id: currentCaptain?._id });
@@ -139,6 +139,31 @@ const deleteProfile = async (currentCaptain) => {
 };
 
 
+const getCaptainStatus = async (currentCaptain) => {
+  const captain = await Captain.findById(currentCaptain?._id).select(
+    "isOnline isBusy status earningGoal",
+  );
+  if (captain) {
+    return {
+      code: ResponseCode?.OK,
+      message: "status get successfully",
+      data: captain,
+    };
+  } else {
+    throw {
+      code: ResponseCode?.INTERNAL_SERVER_ERROR,
+      message: "Error in getting status",
+    };
+  }
+};
 
 
-module.exports = { loginService, signUpService, updateProfile, deleteProfile };
+
+
+module.exports = {
+  loginService,
+  signUpService,
+  updateProfile,
+  deleteProfile,
+  getCaptainStatus,
+};

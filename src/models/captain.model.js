@@ -32,17 +32,6 @@ const CaptainSchema = new mongoose.Schema(
       model: { type: String, required: true },
       vehicleNumber: { type: String, required: true },
     },
-    location: {
-      type: {
-        type: String,
-        enum: ["Point"],
-        default: "Point",
-      },
-      coordinates: {
-        type: [Number],
-        default: [0, 0],
-      },
-    },
     isOnline: {
       type: Boolean,
       default: false,

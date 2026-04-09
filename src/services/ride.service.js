@@ -1,6 +1,7 @@
 const Ride = require("../models/ride.model");
 const Captain = require("../models/captain.model");
 const constant = require("../utils/constant");
+const Utils = require("../utils/utils");
 const { sendMessageToSocketId, rideEvents } = require("../sockets/socket");
 const CommonServices = require("./common.service");
 
@@ -150,10 +151,55 @@ const calculatingPrice = async (data) => {
   };
 };
 
+
+const getWeeklyRecord = async (currentCaptain) => {
+  const date = Utils?.getCurrentWeekDates();
+  const record = await Ride.find({
+    captain: currentCaptain?._id,
+    createdAt: {
+      $gte: date?.start,
+      $lte: date?.end,
+    },
+  });
+  if (record) {
+    let value = 0,
+      distance = 0,
+      time = 0,
+      trip = 0;
+
+    record.forEach((item) => {
+      if (item?.status === "completed") {
+        value += item?.fare;
+        distance += item?.duration;
+        time += item?.distance;
+        trip++;
+      }
+    });
+    return {
+      code: constant?.ResponseCode?.OK,
+      message: "data fetch successfully",
+      data: {
+        overall: {
+          value: value,
+          distance: distance / 1000,
+          time: time / 60,
+          trip: trip,
+        },
+        record,
+      },
+    };
+  }
+  throw {
+    code: constant?.ResponseCode?.INTERNAL_SERVER_ERROR,
+    message: "Error in fetching data",
+  };
+};
+
 module.exports = {
   findingCaptainandAssignRideService,
   ChangeRideStatus,
   getPreviousRide,
   findingPath,
   calculatingPrice,
+  getWeeklyRecord,
 };
